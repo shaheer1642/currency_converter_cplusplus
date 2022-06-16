@@ -15,7 +15,7 @@ class Currency {
 	        string fileContent;
 	        string line;
 	
-	        ifstream MyReadFile("currencies.json");
+	        ifstream MyReadFile("data/currencies.json");
 	
 	        while (getline (MyReadFile, line)) {
 	            fileContent += line;
@@ -24,9 +24,9 @@ class Currency {
 	        currencyData = json::parse(fileContent);
 	    }
 
-        int getCurrencyRate(string baseCurr, string convCurr) {
+        float getCurrencyRate(string baseCurr, string convCurr, float baseCurrVal) {
             try {
-                return this -> currencyData[baseCurr][convCurr];
+                return baseCurrVal * float(this->currencyData[baseCurr][convCurr]);
             } catch (json::type_error e) {
                 cout<<e.what()<<endl;
                 return -1;
@@ -37,7 +37,16 @@ class Currency {
 int main() {
     Currency currencyObj;
     
-    cout<<currencyObj.getCurrencyRate("usde","pkr");
+    string baseCurr,convCurr;
+    float baseCurrVal;
+    cout<<"Enter base currency: ";
+    cin>>baseCurr;
+    cout<<"Enter convertion currency: ";
+    cin>>convCurr;
+    cout<<"Enter base currency value: ";
+    cin>>baseCurrVal;
+    
+    cout<<"Result = "<<currencyObj.getCurrencyRate(baseCurr,convCurr,baseCurrVal);
 
     return 0;
 }
