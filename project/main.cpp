@@ -1,8 +1,17 @@
+/* 
+IMPORTANT NOTE: 
+
+	Add the following line to Tools > Compiler Options > General:
+		-std=c++11 
+		
+	or else the program will not compile
+*/
+
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <conio.h>
-#include "lib\json.hpp"
+#include "lib/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
