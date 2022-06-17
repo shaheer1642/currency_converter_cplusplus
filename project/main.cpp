@@ -16,11 +16,21 @@ string strUpper(string str) {
     
     return upper;
 }
+string strLower(string str) {
+    string upper;
+    for (int x=0; x<str.length(); x++) {
+        upper += tolower(str[x]);
+    }
+    
+    return upper;
+}
 
 class Currency {
 	private:
     	json currencyData;
     	json currencyNames;
+    public:
+        string currencyNamesArr[150]; 
 
     public: 
 	    Currency() {
@@ -39,6 +49,11 @@ class Currency {
 	            fileContent += line;
 	        }
 	        currencyNames = json::parse(fileContent);
+            int i = 0;
+            for (const auto& item : currencyNames.items()) {
+                currencyNamesArr[i] = item.key();
+                i++;
+            }
 	    }
 
         float getCurrencyRate(string baseCurr, string convCurr, float baseCurrVal) {
@@ -53,86 +68,111 @@ class Currency {
         }
 
         void printCurrencyNames() {
-            int i = 1;
-            int j = 1;
-            for (const auto& item : currencyNames.items()) {
-                cout << setw(12) << i << " - " << strUpper(item.key());
-                if (j % 6 == 0)
+            for (int i = 0; i<150; i++) {
+                cout << setw(12) << strUpper(currencyNamesArr[i]);
+
+                if ((i+1) % 6 == 0)
                     cout<<endl;
-                i++;
-                j++;
             }
         }
 
-        string getCurrencyName(int num) {
-            int i = 1;
-            for (const auto& item : currencyNames.items()) {
-                if (i == num) {
-                    return item.key();
-                }
-                i++;
-            }
-            return "undefined";
+        bool checkCurrencyName(string name) {
+            if (currencyData.contains(name))
+                return true;
+            return false;
         }
 };
 Currency currencyObj;
 
 string printMenu1() {
     system("cls");
-    int input;
     currencyObj.printCurrencyNames();
-    cout<<endl<<"Select base currency: ";
+    string input;
+    cout<<endl<<"Type base currency: ";
     cin>>input;
-    if (input < 1 || input > 150)
+    input = strLower(input);
+    if (currencyObj.checkCurrencyName(input))
+        return input;
+    else 
         return printMenu1();
-    return currencyObj.getCurrencyName(input);
 }
 string printMenu2() {
     system("cls");
-    int input;
     currencyObj.printCurrencyNames();
-    cout<<endl<<"Select converted currency: ";
+    string input;
+    cout<<endl<<"Type converted currency: ";
     cin>>input;
-    if (input < 1 || input > 150)
+    input = strLower(input);
+    if (currencyObj.checkCurrencyName(input))
+        return input;
+    else 
         return printMenu2();
-    return currencyObj.getCurrencyName(input);
 }
-float printMenu3() {
+float printMenu3(string baseCurr, string convCurr) {
     system("cls");
     float input;
-    cout<<"Enter amount: ";
+    cout<<"Converting "<<strUpper(baseCurr)<<" to "<<strUpper(convCurr)<<endl;
+    cout<<"---------------------\n\n";
+    cout<<"1 "<<strUpper(baseCurr)<<" = "<<currencyObj.getCurrencyRate(baseCurr,convCurr,1)<<" "<<strUpper(convCurr);
+    cout<<"\n\nEnter amount in "<<strUpper(baseCurr)<<": ";
     cin>>input;
     return input;
 }
+void saveConversion(string output) {
+    ofstream fout;
+    fout.open("data/userConversions.txt",ios::app);
+    fout<<output<<endl;
+    fout.close();
+}
 void printMenu4(string baseCurr, string convCurr, float baseCurrVal) {
     system("cls");
-    cout<<baseCurrVal<<" "<<strUpper(baseCurr)<<" = "<<currencyObj.getCurrencyRate(baseCurr,convCurr,baseCurrVal)<<" "<<strUpper(convCurr)<<endl;
-    cout<<"Press any key to continue...";
+    string output = to_string(baseCurrVal) + " " + strUpper(baseCurr) + " = " + to_string(currencyObj.getCurrencyRate(baseCurr,convCurr,baseCurrVal)) + " " + strUpper(convCurr);
+    cout<<output;
+    saveConversion(output);
+    cout<<endl<<endl<<"Press any key to continue...";
     getch();
 }
-void getInput(int lo, int hi, char* textArr[], int &input) {
+void printMenu5() {
     system("cls");
-    for (int i=0; i<sizeof(textArr)/sizeof(textArr[0]); i++) {
-        if (i + 1 == input)
-            cout<<"-> ";
-        cout<<textArr[i]<<endl;
+	string line;
+    ifstream fin("data/userConversions.txt");
+    while (getline (fin, line)) {
+        cout<<line<<endl;
     }
-    cout<<"\n\n(Use arrow keys to navigate)";
+    cout<<endl<<endl<<"Press any key to continue...";
+    getch();
+}
+void getInput(int &input) {
+    system("cls");
+    cout<<"Welcome to Currency Converter"<<endl;
+    cout<<"-----------------------------\n\n";
+    if (input == 1)
+        cout<<"-> ";
+    cout<<"Perform conversion"<<endl;
+    if (input == 2)
+        cout<<"-> ";
+    cout<<"View previous conversions"<<endl;
+    if (input == 3)
+        cout<<"-> ";
+    cout<<"Exit\n\n";
+    cout<<"-----------------------------";
+
+    cout<<"\n\n(Use arrow keys to navigate. Press enter to select)";
     int ch = getch();
     if (ch == 72) {
         input--;
-        if (input < lo)
-            input = lo;
-        getInput(lo, hi, textArr, input);
+        if (input < 1)
+            input = 1;
+        getInput(input);
     }
     else if (ch == 80) {
         input++;
-        if (input > hi)
-            input = hi;
-        getInput(lo, hi, textArr, input);
+        if (input > 3)
+            input = 3;
+        getInput(input);
     }
     else if (char(ch) != '\r') {
-        getInput(lo, hi, textArr, input);
+        getInput(input);
     }
 }
 int printMainMenu() {
@@ -140,20 +180,22 @@ int printMainMenu() {
     float baseCurrVal;
     int input = 1;
 
-    getInput(1, 3, {"Perform conversion","View previous conversions","Exit"}, input);
+    getInput(input);
 
     if (input == 1) {
         baseCurr = printMenu1();
         convCurr = printMenu2();
-        baseCurrVal = printMenu3();
+        baseCurrVal = printMenu3(baseCurr, convCurr);
         printMenu4(baseCurr,convCurr,baseCurrVal);
         printMainMenu();
     }
-    if (input == 2) {   // end program
-        cout<<"This functionality is not implemented yet";
-        return 0;
+    if (input == 2) {  
+        printMenu5();
+        printMainMenu();
     }
-    if (input == 3) {   // end program
+    if (input == 3) {  // end program
+        system("cls");
+        cout<<"Exiting program. Goodbye!";
         return 0;
     }
 }
