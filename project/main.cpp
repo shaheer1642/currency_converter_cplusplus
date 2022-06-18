@@ -156,7 +156,7 @@ void printMenu4(string baseCurr, string convCurr, float baseCurrVal) {
     cout<<endl<<endl<<"Press any key to continue...";
     getch();    // wait for user input and terminate the function
 }
-// this function prints all previous conversion on the screen
+// this function prints all previous conversions on the screen
 void printMenu5() {
     system("cls");  // clear screen
 	string line;
